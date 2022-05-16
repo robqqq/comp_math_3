@@ -17,6 +17,8 @@ public class ChooseFunctionAndMethodFrame extends CustomFrame {
     private final ChooseInputDataFrame chooseInputDataFrame;
     private final Function[] functions;
     private final IntegrationMethod[] methods;
+    private ButtonGroup methodButtonGroup;
+    private ButtonGroup functionButtonGroup;
 
     @Autowired
     public ChooseFunctionAndMethodFrame(ChooseInputDataFrame chooseInputDataFrame) {
@@ -34,15 +36,17 @@ public class ChooseFunctionAndMethodFrame extends CustomFrame {
 
     private void initUI(){
         JLabel chooseFunctionLabel = new JLabel("Выберите функцию:");
-        ButtonGroup functionButtonGroup = new ButtonGroup();
-        for (Function function : functions) {
-            JRadioButton button = new JRadioButton(function.toString());
+        functionButtonGroup = new ButtonGroup();
+        for (int i = 0; i < functions.length; i++) {
+            JRadioButton button = new JRadioButton(functions[i].toString());
+            button.setMnemonic(i);
             functionButtonGroup.add(button);
         }
         JLabel chooseMethodLabel = new JLabel("Выберите метод:");
-        ButtonGroup methodButtonGroup = new ButtonGroup();
-        for (IntegrationMethod method : methods) {
-            JRadioButton button = new JRadioButton(method.toString());
+        methodButtonGroup = new ButtonGroup();
+        for (int i = 0; i < methods.length; i++) {
+            JRadioButton button = new JRadioButton(methods[i].toString());
+            button.setMnemonic(i);
             methodButtonGroup.add(button);
         }
         JButton okButton = new JButton("OK");
@@ -56,6 +60,10 @@ public class ChooseFunctionAndMethodFrame extends CustomFrame {
         addHorizontalComponents(okButton, exitButton);
     }
     private void onOkButtonClick() {
+        IntegrationMethod method = methods[methodButtonGroup.getSelection().getMnemonic()];
+        Function function = functions[functionButtonGroup.getSelection().getMnemonic()];
+        method.setFunction(function);
+        chooseInputDataFrame.setMethod(method);
         chooseInputDataFrame.setVisible(true);
     }
 }

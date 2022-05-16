@@ -11,13 +11,14 @@ public class TrapezoidMethod implements IntegrationMethod {
     @Override
     public IntegrationResults calculate() {
         int n = 4;
-        double i0 = integrate(n);
-        double i1;
+        double i0;
+        double i1 = integrate(n);
         do {
             n *= 2;
+            i0 = i1;
             i1 = integrate(n);
-        } while (Math.abs(i1 - i0) <= inputData.getEps());
-        return IntegrationResults.builder().value(i1).n(n).error(Math.abs(i1 - i0)).build();
+        } while (Math.abs((i1 - i0) / 3) > inputData.getEps());
+        return IntegrationResults.builder().value(i1).n(n).error(Math.abs((i1 - i0) / 3)).build();
     }
 
     private double integrate(int n) {
