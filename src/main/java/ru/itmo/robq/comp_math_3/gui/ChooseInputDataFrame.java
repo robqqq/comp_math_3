@@ -1,18 +1,26 @@
 package ru.itmo.robq.comp_math_3.gui;
 
+
+import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.itmo.robq.comp_math_3.functions.Function;
+
+import lombok.Setter;
+import ru.itmo.robq.comp_math_3.methods.IntegrationInputData;
 import ru.itmo.robq.comp_math_3.methods.IntegrationMethod;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 @Component
 public class ChooseInputDataFrame extends CustomFrame {
     private final ResultsFrame resultsFrame;
+    @Setter
     private IntegrationMethod method;
-    private Function function;
     private JTextField aTextField;
     private JTextField bTextField;
     private JTextField epsTextField;
@@ -50,11 +58,70 @@ public class ChooseInputDataFrame extends CustomFrame {
     }
 
     private void onOkButtonClick() {
+        double a;
+        double b;
+        double eps;
+        try {
+            a = Double.parseDouble(aTextField.getText().replace(',', '.').trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Значение а должно быть числом",
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            b = Double.parseDouble(bTextField.getText().replace(',', '.').trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Значение b должно быть числом",
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            eps = Math.abs(Double.parseDouble(epsTextField.getText().replace(',', '.').trim()));
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Значение eps должно быть числом",
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        IntegrationInputData inputData = IntegrationInputData.builder().a(a).b(b).eps(eps).build();
+        method.setInputData(inputData);
+        resultsFrame.setResults(method.calculate());
         setVisible(false);
         resultsFrame.setVisible(true);
     }
 
     private void onChooseFileButtonClick() {
-
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV File", "csv"));
+        int ret = fileChooser.showOpenDialog(this);
+        if (ret == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            try {
+                IntegrationInputData inputData = new CsvToBeanBuilder<IntegrationInputData>(new FileReader(file))
+                        .withType(IntegrationInputData.class)
+                        .build()
+                        .parse()
+                        .get(0);
+                aTextField.setText(String.valueOf(inputData.getA()));
+                bTextField.setText(String.valueOf(inputData.getB()));
+                epsTextField.setText(String.valueOf(inputData.getEps()));
+            } catch (FileNotFoundException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Файл не найден",
+                        "Ошибка",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (RuntimeException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Неверный CSV формат",
+                        "Ошибка",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

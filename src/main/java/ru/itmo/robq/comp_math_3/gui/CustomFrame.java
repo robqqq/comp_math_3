@@ -31,6 +31,7 @@ abstract class CustomFrame extends JFrame {
     protected void addHorizontalComponents(JComponent... components) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.add(Box.createRigidArea(new Dimension(10, 0)));
         for (JComponent component: components) {
             panel.add(component);
             panel.add(Box.createRigidArea(new Dimension(10, 0)));
